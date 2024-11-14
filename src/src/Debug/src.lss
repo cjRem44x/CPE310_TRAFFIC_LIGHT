@@ -1,12 +1,12 @@
 
-AVRASM ver. 2.2.8  C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm Wed Oct 30 17:26:51 2024
+AVRASM ver. 2.2.8  C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm Thu Nov 14 15:23:09 2024
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
-C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(7): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328pdef.inc'
+C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(1): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328pdef.inc'
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
-C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(7): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328pdef.inc'
+C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(1): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328pdef.inc'
                                  
-                                 ;	CPE310:			TRAFFIC LIGHT CODE
+                                 .include "m328pdef.inc"
                                  
                                  ;***** Created: 2011-02-09 12:03 ******* Source: ATmega328P.xml **********
                                  ;*************************************************************************
@@ -987,12 +987,6 @@ C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(7): Including file 'C:
                                  
                                  ; ***** END OF FILE ******************************************************
                                  
-                                 ;
-                                 ;	Authors:		Carrick Remillard, David Dag
-                                 ;	Description:	TODO
-                                 ;
-                                 
-                                 .include "m328pdef.inc"
                                  
                                  ;***** Created: 2011-02-09 12:03 ******* Source: ATmega328P.xml **********
                                  ;*************************************************************************
@@ -1036,47 +1030,76 @@ C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(7): Including file 'C:
                                  #endif  /* _M328PDEF_INC_ */
                                  
                                  ; ***** END OF FILE ******************************************************
+                                 
+                                 .equ NS_GRE_ON = (1<<PD1)
+                                 .equ NS_YEL_ON = (1<<PD2)
+                                 .equ NS_RED_ON = (1<<PD3)
+                                 
+                                 .equ EW_GRE_ON = (1<<PD4)
+                                 .equ EW_YEL_ON = (1<<PD5)
+                                 .equ EW_RED_ON = (1<<PD6)
+                                 
                                  .org 0
-000000 c000                      	rjmp MAIN
+000000 c000                      	rjmp start
                                  
-                                 MAIN:
-                                 	; Set up stack pointer
-000001 ef0f                      	ldi r16, low(RAMEND)
-000002 bf0d                      	out spl, r16
-000003 e008                      	ldi r16, high(RAMEND)
-000004 bf0e                      	out sph, r16
+                                 start:
+000001 ef0f                      	LDI R16, low(RAMEND) ; Initialize Stack Pointer
+000002 bf0d                      	OUT SPL,R16
+000003 e008                      	LDI R16, high (RAMEND)
+000004 bf0e                      	OUT SPH, R16
+000005 e70e                      	LDI R16, NS_GRE_ON | NS_YEL_ON | NS_RED_ON | EW_GRE_ON | EW_YEL_ON | EW_RED_ON
+000006 b90a                      	OUT DDRD,R16 ; I/O mapped (see m328pdef.inc)
                                  
-                                 	; Configure PD5, PD6, and PD7 as outputs
-000005 ee00                      	ldi r16, (1<<PD7) | (1<<PD6) | (1<<PD5)
-000006 b90a                      	out DDRD, r16
+                                 driver:
+000007 d008                      	rcall r_und_g
+000008 d013                      	rcall mydelay
                                  
-                                 TEST:
-000007 e200                      	LDI R16, (1<<PD5)
-000008 b90b                      	OUT portD, R16
-000009 940e 000f                 	CALL DELAY
-00000b ed0f                      	LDI R16, ~(1<<PD5)
-00000c b90b                      	OUT portD, R16
-00000d d001                      	RCALL DELAY
+000009 d009                      	rcall r_und_y
+00000a d011                      	rcall mydelay
                                  
-00000e cff8                      	rjmp TEST
+00000b d00a                      	rcall g_und_r
+00000c d00f                      	rcall mydelay
                                  
-                                 DELAY:
-00000f e512                      	LDI r17, 0x52	; Delay time
-000010 ef2f                      L2: LDI r18, 0xFF
-000011 ef3f                      L3: LDI r19, 0xFF
+00000d d00b                      	rcall y_und_r
+00000e d00d                      	rcall mydelay
                                  
-000012 953a                      L4: DEC r19
-000013 f7f1                      	BRNE L4
+00000f cff7                      	rjmp driver
                                  
-000014 952a                      	DEC r18
-000015 f7d9                      	BRNE L3
+                                 // The following subroutines are structure as followed:
+                                 //		NsLight_und_EwLight
+                                 r_und_g:
+000010 e108                      	ldi r16, NS_RED_ON | EW_GRE_ON
+000011 b90b                      	out portD, r16
+000012 9508                      	ret
                                  
-000016 951a                      	DEC r17
-000017 f7c1                      	BRNE L2
-000018 9508                      	RET
+                                 r_und_y:
+000013 e208                      	ldi r16, NS_RED_ON | EW_YEL_ON
+000014 b90b                      	out portD, r16
+000015 9508                      	ret
                                  
-                                 DONE:
-000019 940c 0019                 	jmp DONE
+                                 g_und_r:
+000016 e402                      	ldi r16, NS_GRE_ON | EW_RED_ON 
+000017 b90b                      	out portD, r16
+000018 9508                      	ret
+                                 
+                                 y_und_r:
+000019 e404                      	ldi r16, NS_YEL_ON | EW_RED_ON
+00001a b90b                      	out portD, r16
+00001b 9508                      	ret
+                                 
+                                 mydelay:
+00001c ef1f                      	ldi r17,0xFF ;outer loop
+00001d ef2f                      L2: ldi r18,0xFF ;middle loop
+00001e ef3f                      L3: ldi r19,0xFF ;inner loop
+00001f 953a                      L4: dec r19 ;
+000020 f7f1                      	brne L4
+000021 952a                      L5: dec r18
+000022 f7d9                      	brne L3
+000023 951a                      	dec r17
+000024 f7c1                      	brne L2
+000025 9508                      	ret
+                                 
+                                 done:
 
 
 RESOURCE USE INFORMATION
@@ -1096,7 +1119,7 @@ counted separately from r26..r31 here.
 "ATmega328P" register use summary:
 x  :   0 y  :   0 z  :   0 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  10 r17:   2 r18:   2 r19:   2 r20:   0 
+r13:   0 r14:   0 r15:   0 r16:  14 r17:   2 r18:   2 r19:   2 r20:   0 
 r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:   0 r31:   0 
 Registers used: 4 out of 35 (11.4%)
@@ -1107,26 +1130,26 @@ andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0
 brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
 brne  :   3 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
-brvs  :   0 bset  :   0 bst   :   0 call  :   1 cbi   :   0 cbr   :   0 
+brvs  :   0 bset  :   0 bst   :   0 call  :   0 cbi   :   0 cbr   :   0 
 clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   0 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
 cpi   :   0 cpse  :   0 dec   :   3 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   0 jmp   :   1 
-ld    :   0 ldd   :   0 ldi   :   8 lds   :   0 lpm   :   0 lsl   :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   0 jmp   :   0 
+ld    :   0 ldd   :   0 ldi   :  10 lds   :   0 lpm   :   0 lsl   :   0 
 lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :   5 pop   :   0 
-push  :   0 rcall :   1 ret   :   1 reti  :   0 rjmp  :   2 rol   :   0 
+neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :   7 pop   :   0 
+push  :   0 rcall :   8 ret   :   5 reti  :   0 rjmp  :   3 rol   :   0 
 ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 
 sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 
 sei   :   0 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
 sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   0 
 sub   :   0 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 9 out of 113 (8.0%)
+Instructions used: 7 out of 113 (6.2%)
 
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000036     54      0     54   32768   0.2%
+[.cseg] 0x000000 0x00004e     78      0     78   32768   0.2%
 [.dseg] 0x000100 0x000100      0      0      0    2048   0.0%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 

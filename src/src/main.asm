@@ -1,49 +1,72 @@
-;	CPE310:			TRAFFIC LIGHT CODE
-;
-;	Authors:		Carrick Remillard, David Dag
-;	Description:	TODO
-;
-
 .include "m328pdef.inc"
+
+.equ NS_GRE_ON = (1<<PD1)
+.equ NS_YEL_ON = (1<<PD2)
+.equ NS_RED_ON = (1<<PD3)
+
+.equ EW_GRE_ON = (1<<PD4)
+.equ EW_YEL_ON = (1<<PD5)
+.equ EW_RED_ON = (1<<PD6)
+
 .org 0
-	rjmp MAIN
+	rjmp start
 
-MAIN:
-	; Set up stack pointer
-	ldi r16, low(RAMEND)
-	out spl, r16
-	ldi r16, high(RAMEND)
-	out sph, r16
+start:
+	LDI R16, low(RAMEND) ; Initialize Stack Pointer
+	OUT SPL,R16
+	LDI R16, high (RAMEND)
+	OUT SPH, R16
+	LDI R16, NS_GRE_ON | NS_YEL_ON | NS_RED_ON | EW_GRE_ON | EW_YEL_ON | EW_RED_ON
+	OUT DDRD,R16 ; I/O mapped (see m328pdef.inc)
 
-	; Configure PD5, PD6, and PD7 as outputs
-	ldi r16, (1<<PD7) | (1<<PD6) | (1<<PD5)
-	out DDRD, r16
+driver:
+	rcall r_und_g
+	rcall mydelay
 
-TEST:
-	LDI R16, (1<<PD5)
-	OUT portD, R16
-	CALL DELAY
+	rcall r_und_y
+	rcall mydelay
 
-	LDI R16, ~(1<<PD5)
-	OUT portD, R16
-	RCALL DELAY
+	rcall g_und_r
+	rcall mydelay
 
-	rjmp TEST
+	rcall y_und_r
+	rcall mydelay
 
-DELAY:
-	LDI r17, 0x52	; Delay time
-L2: LDI r18, 0xFF
-L3: LDI r19, 0xFF
+	rjmp driver
 
-L4: DEC r19
-	BRNE L4
+// The following subroutines are structure as followed:
+//		NsLight_und_EwLight
+r_und_g:
+	ldi r16, NS_RED_ON | EW_GRE_ON
+	out portD, r16
+	ret
 
-	DEC r18
-	BRNE L3
+r_und_y:
+	ldi r16, NS_RED_ON | EW_YEL_ON
+	out portD, r16
+	ret
 
-	DEC r17
-	BRNE L2
-	RET
+g_und_r:
+	ldi r16, NS_GRE_ON | EW_RED_ON 
+	out portD, r16
+	ret
 
-DONE:
-	jmp DONE
+y_und_r:
+	ldi r16, NS_YEL_ON | EW_RED_ON
+	out portD, r16
+	ret
+
+mydelay:
+	ldi r17,0xFF ;outer loop
+L2: ldi r18,0xFF ;middle loop
+L3: ldi r19,0xFF ;inner loop
+L4: dec r19 ;
+	brne L4
+L5: dec r18
+	brne L3
+	dec r17
+	brne L2
+	ret
+
+done:
+	rjmp done
