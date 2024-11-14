@@ -1,12 +1,12 @@
 
-AVRASM ver. 2.2.8  C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm Thu Nov 14 15:23:09 2024
+AVRASM ver. 2.2.8  C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm Thu Nov 14 15:36:32 2024
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
-C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(1): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328pdef.inc'
+C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(12): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328pdef.inc'
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
-C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(1): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328pdef.inc'
+C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(12): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328pdef.inc'
                                  
-                                 .include "m328pdef.inc"
+                                 ;
                                  
                                  ;***** Created: 2011-02-09 12:03 ******* Source: ATmega328P.xml **********
                                  ;*************************************************************************
@@ -987,6 +987,17 @@ C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(1): Including file 'C:
                                  
                                  ; ***** END OF FILE ******************************************************
                                  
+                                 ;	CPE310:			Traffic Light Project Code
+                                 ;
+                                 ;	Authors:		Carrick Remillard, David Dag
+                                 ;
+                                 ;	Description:	ATmega328P assembly code to control a traffic 
+                                 ;					light system with NS (North-South) and EW (East
+                                 ;					-West) traffic signals using delays to simulate 
+                                 ;					light changes.  
+                                 ;
+                                 
+                                 .include "m328pdef.inc"
                                  
                                  ;***** Created: 2011-02-09 12:03 ******* Source: ATmega328P.xml **********
                                  ;*************************************************************************
@@ -1031,74 +1042,98 @@ C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(1): Including file 'C:
                                  
                                  ; ***** END OF FILE ******************************************************
                                  
-                                 .equ NS_GRE_ON = (1<<PD1)
-                                 .equ NS_YEL_ON = (1<<PD2)
-                                 .equ NS_RED_ON = (1<<PD3)
+                                 ; ==============================
+                                 ; Defined Constants and Pin Mapping
+                                 ; ==============================
+                                 .equ NS_GRE_ON = (1<<PD1)  ; North-South Green Light on PD1
+                                 .equ NS_YEL_ON = (1<<PD2)  ; North-South Yellow Light on PD2
+                                 .equ NS_RED_ON = (1<<PD3)  ; North-South Red Light on PD3
                                  
-                                 .equ EW_GRE_ON = (1<<PD4)
-                                 .equ EW_YEL_ON = (1<<PD5)
-                                 .equ EW_RED_ON = (1<<PD6)
+                                 .equ EW_GRE_ON = (1<<PD4)  ; East-West Green Light on PD4
+                                 .equ EW_YEL_ON = (1<<PD5)  ; East-West Yellow Light on PD5
+                                 .equ EW_RED_ON = (1<<PD6)  ; East-West Red Light on PD6
                                  
+                                 ; ==============================
+                                 ; Start - Program Initialization
+                                 ; ==============================
                                  .org 0
-000000 c000                      	rjmp start
+000000 c000                      	rjmp start  ; Jump to start routine at program reset
                                  
                                  start:
-000001 ef0f                      	LDI R16, low(RAMEND) ; Initialize Stack Pointer
-000002 bf0d                      	OUT SPL,R16
-000003 e008                      	LDI R16, high (RAMEND)
-000004 bf0e                      	OUT SPH, R16
+                                 	; Initialize the Stack Pointer
+000001 ef0f                      	LDI R16, low(RAMEND)    ; Load the low byte of RAMEND into R16
+000002 bf0d                      	OUT SPL, R16            ; Set low byte of Stack Pointer
+000003 e008                      	LDI R16, high(RAMEND)   ; Load the high byte of RAMEND into R16
+000004 bf0e                      	OUT SPH, R16            ; Set high byte of Stack Pointer
+                                 	
+                                 	; Configure Port D pins as outputs for traffic lights
 000005 e70e                      	LDI R16, NS_GRE_ON | NS_YEL_ON | NS_RED_ON | EW_GRE_ON | EW_YEL_ON | EW_RED_ON
-000006 b90a                      	OUT DDRD,R16 ; I/O mapped (see m328pdef.inc)
+000006 b90a                      	OUT DDRD, R16           ; Set Port D as output for traffic light control
                                  
+                                 ; ==============================
+                                 ; Main Traffic Light Control Loop
+                                 ; ==============================
                                  driver:
-000007 d008                      	rcall r_und_g
-000008 d013                      	rcall mydelay
+000007 d008                      	rcall r_und_g           ; Call subroutine for NS Red, EW Green
+000008 d013                      	rcall mydelay           
+                                 	
+000009 d009                      	rcall r_und_y           ; Call subroutine for NS Red, EW Yellow
+00000a d011                      	rcall mydelay           
+00000b d00a                      	rcall g_und_r           ; Call subroutine for NS Green, EW Red
+00000c d00f                      	rcall mydelay           
+                                 	
+00000d d00b                      	rcall y_und_r           ; Call subroutine for NS Yellow, EW Red
+00000e d00d                      	rcall mydelay           
+                                 	
+00000f cff7                      	rjmp driver             ; Repeat the sequence indefinitely
                                  
-000009 d009                      	rcall r_und_y
-00000a d011                      	rcall mydelay
+                                 ; ==============================
+                                 ; Traffic Light State Subroutines
+                                 ; Naming Convention: NsLight_und_EwLight
+                                 ; ==============================
                                  
-00000b d00a                      	rcall g_und_r
-00000c d00f                      	rcall mydelay
-                                 
-00000d d00b                      	rcall y_und_r
-00000e d00d                      	rcall mydelay
-                                 
-00000f cff7                      	rjmp driver
-                                 
-                                 // The following subroutines are structure as followed:
-                                 //		NsLight_und_EwLight
+                                 ; NS Red, EW Green
                                  r_und_g:
-000010 e108                      	ldi r16, NS_RED_ON | EW_GRE_ON
-000011 b90b                      	out portD, r16
+000010 e108                      	ldi r16, NS_RED_ON | EW_GRE_ON  ; Set NS Red, EW Green
+000011 b90b                      	out portD, r16                   ; Output to Port D
 000012 9508                      	ret
                                  
+                                 ; NS Red, EW Yellow
                                  r_und_y:
-000013 e208                      	ldi r16, NS_RED_ON | EW_YEL_ON
-000014 b90b                      	out portD, r16
+000013 e208                      	ldi r16, NS_RED_ON | EW_YEL_ON  ; Set NS Red, EW Yellow
+000014 b90b                      	out portD, r16                   ; Output to Port D
 000015 9508                      	ret
                                  
+                                 ; NS Green, EW Red
                                  g_und_r:
-000016 e402                      	ldi r16, NS_GRE_ON | EW_RED_ON 
-000017 b90b                      	out portD, r16
+000016 e402                      	ldi r16, NS_GRE_ON | EW_RED_ON  ; Set NS Green, EW Red
+000017 b90b                      	out portD, r16                   ; Output to Port D
 000018 9508                      	ret
                                  
+                                 ; NS Yellow, EW Red
                                  y_und_r:
-000019 e404                      	ldi r16, NS_YEL_ON | EW_RED_ON
-00001a b90b                      	out portD, r16
+000019 e404                      	ldi r16, NS_YEL_ON | EW_RED_ON  ; Set NS Yellow, EW Red
+00001a b90b                      	out portD, r16                   ; Output to Port D
 00001b 9508                      	ret
                                  
+                                 ; ==============================
+                                 ; Delay Subroutine
+                                 ; ==============================
                                  mydelay:
-00001c ef1f                      	ldi r17,0xFF ;outer loop
-00001d ef2f                      L2: ldi r18,0xFF ;middle loop
-00001e ef3f                      L3: ldi r19,0xFF ;inner loop
-00001f 953a                      L4: dec r19 ;
-000020 f7f1                      	brne L4
-000021 952a                      L5: dec r18
-000022 f7d9                      	brne L3
-000023 951a                      	dec r17
-000024 f7c1                      	brne L2
-000025 9508                      	ret
+00001c ef1f                      	ldi r17, 0xFF
+00001d ef2f                      L2: ldi r18, 0xFF        
+00001e ef3f                      L3: ldi r19, 0xFF        
+00001f 953a                      L4: dec r19              
+000020 f7f1                      	brne L4               
+000021 952a                      L5: dec r18              
+000022 f7d9                      	brne L3               
+000023 951a                      	dec r17               
+000024 f7c1                      	brne L2               
+000025 9508                      	ret                  
                                  
+                                 ; ==============================
+                                 ; End - Infinite Loop to Halt Program Execution
+                                 ; ==============================
                                  done:
 
 

@@ -23,17 +23,17 @@
   <FILE>src.lss</FILE>
  </OUTPUT_FILES>
  <LABELS>
-  <start><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>14</LINE></start>
-  <driver><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>22</LINE></driver>
-  <r_und_g><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>39</LINE></r_und_g>
-  <mydelay><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>59</LINE></mydelay>
-  <r_und_y><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>44</LINE></r_und_y>
-  <g_und_r><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>49</LINE></g_und_r>
-  <y_und_r><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>54</LINE></y_und_r>
-  <L2><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>61</LINE></L2>
-  <L3><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>62</LINE></L3>
-  <L4><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>63</LINE></L4>
-  <L5><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>65</LINE></L5>
-  <done><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>71</LINE></done>
+  <start><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>31</LINE></start>
+  <driver><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>45</LINE></driver>
+  <r_und_g><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>65</LINE></r_und_g>
+  <mydelay><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>91</LINE></mydelay>
+  <r_und_y><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>71</LINE></r_und_y>
+  <g_und_r><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>77</LINE></g_und_r>
+  <y_und_r><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>83</LINE></y_und_r>
+  <L2><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>93</LINE></L2>
+  <L3><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>94</LINE></L3>
+  <L4><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>95</LINE></L4>
+  <L5><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>97</LINE></L5>
+  <done><FILE>C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm</FILE><LINE>106</LINE></done>
  </LABELS>
 </ASSEMBLER_INFO>
