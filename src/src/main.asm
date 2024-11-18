@@ -12,7 +12,7 @@
 .include "m328pdef.inc"
 
 ; ==============================
-; Defined Constants and Pin Mapping
+; Defined Constants and Pin Mapping  
 ; ==============================
 .equ NS_GRE_ON = (1<<PD1)  ; North-South Green Light on PD1
 .equ NS_YEL_ON = (1<<PD2)  ; North-South Yellow Light on PD2
@@ -44,15 +44,16 @@ start:
 ; ==============================
 driver:
 	rcall r_und_g           ; Call subroutine for NS Red, EW Green
-	rcall mydelay           
+	rcall green_delay           
 	
 	rcall r_und_y           ; Call subroutine for NS Red, EW Yellow
-	rcall mydelay           
+	rcall def_delay           
+
 	rcall g_und_r           ; Call subroutine for NS Green, EW Red
-	rcall mydelay           
+	rcall green_delay           
 	
 	rcall y_und_r           ; Call subroutine for NS Yellow, EW Red
-	rcall mydelay           
+	rcall def_delay           
 	
 	rjmp driver             ; Repeat the sequence indefinitely
 
@@ -88,8 +89,20 @@ y_und_r:
 ; ==============================
 ; Delay Subroutine
 ; ==============================
-mydelay:
-	ldi r17, 0xFF
+green_delay:
+	ldi r17, 0x9A
+A2: ldi r18, 0xFF        
+A3: ldi r19, 0xFF        
+A4: dec r19              
+	brne L4               
+A5: dec r18              
+	brne L3               
+	dec r17               
+	brne L2               
+	ret  
+
+def_delay:
+	ldi r17, 0x52
 L2: ldi r18, 0xFF        
 L3: ldi r19, 0xFF        
 L4: dec r19              
