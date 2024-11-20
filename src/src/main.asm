@@ -43,6 +43,9 @@ start:
 ; Main Traffic Light Control Loop
 ; ==============================
 driver:
+	rcall r_und_r			; Call subroutine for NS Red, EW RED
+	rcall def_delay 
+
 	rcall r_und_g           ; Call subroutine for NS Red, EW Green
 	rcall green_delay           
 	
@@ -53,7 +56,7 @@ driver:
 	rcall green_delay           
 	
 	rcall y_und_r           ; Call subroutine for NS Yellow, EW Red
-	rcall def_delay           
+	rcall def_delay          
 	
 	rjmp driver             ; Repeat the sequence indefinitely
 
@@ -86,11 +89,17 @@ y_und_r:
 	out portD, r16                   ; Output to Port D
 	ret
 
+; NS Red, EW Red
+r_und_r:
+	ldi r16, NS_RED_ON | EW_RED_ON   ; Set NS RED, EW Red
+	out portD, r16                   ; Output to Port D
+	ret
+
 ; ==============================
 ; Delay Subroutine
 ; ==============================
 green_delay:
-	ldi r17, 0x9A
+	ldi r17, 0xFF
 A2: ldi r18, 0xFF        
 A3: ldi r19, 0xFF        
 A4: dec r19              
