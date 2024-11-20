@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm Wed Nov 20 12:08:01 2024
+AVRASM ver. 2.2.8  C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm Wed Nov 20 12:12:39 2024
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(12): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328pdef.inc'
@@ -1074,22 +1074,25 @@ C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(12): Including file 'C
                                  ; Main Traffic Light Control Loop
                                  ; ==============================
                                  driver:
-000007 d016                      	rcall r_und_r
-000008 d022                      	rcall def_delay 
+000007 d00c                      	rcall r_und_g           ; Call subroutine for NS Red, EW Green
+000008 d01a                      	rcall green_delay           
+                                 	
+000009 d00d                      	rcall r_und_y           ; Call subroutine for NS Red, EW Yellow
+00000a d022                      	rcall def_delay         
+                                 	
+00000b d014                      	rcall r_und_r			; Call subroutine for NS Red, EW RED
+00000c d020                      	rcall def_delay   
                                  
-000009 d008                      	rcall r_und_g           ; Call subroutine for NS Red, EW Green
-00000a d016                      	rcall green_delay           
+00000d d00c                      	rcall g_und_r           ; Call subroutine for NS Green, EW Red
+00000e d014                      	rcall green_delay           
                                  	
-00000b d009                      	rcall r_und_y           ; Call subroutine for NS Red, EW Yellow
-00000c d01e                      	rcall def_delay           
-                                 
-00000d d00a                      	rcall g_und_r           ; Call subroutine for NS Green, EW Red
-00000e d012                      	rcall green_delay           
+00000f d00d                      	rcall y_und_r           ; Call subroutine for NS Yellow, EW Red
+000010 d01c                      	rcall def_delay    
                                  	
-00000f d00b                      	rcall y_und_r           ; Call subroutine for NS Yellow, EW Red
-000010 d01a                      	rcall def_delay          
+000011 d00e                      	rcall r_und_r			; Call subroutine for NS Red, EW RED
+000012 d01a                      	rcall def_delay       
                                  	
-000011 cff5                      	rjmp driver             ; Repeat the sequence indefinitely
+000013 cff3                      	rjmp driver             ; Repeat the sequence indefinitely
                                  
                                  ; ==============================
                                  ; Traffic Light State Subroutines
@@ -1098,60 +1101,60 @@ C:\Users\cremi\proj\CPE310_TRAFFIC_LIGHT\src\src\main.asm(12): Including file 'C
                                  
                                  ; NS Red, EW Green
                                  r_und_g:
-000012 e108                      	ldi r16, NS_RED_ON | EW_GRE_ON  ; Set NS Red, EW Green
-000013 b90b                      	out portD, r16                   ; Output to Port D
-000014 9508                      	ret
+000014 e108                      	ldi r16, NS_RED_ON | EW_GRE_ON  ; Set NS Red, EW Green
+000015 b90b                      	out portD, r16                   ; Output to Port D
+000016 9508                      	ret
                                  
                                  ; NS Red, EW Yellow
                                  r_und_y:
-000015 e208                      	ldi r16, NS_RED_ON | EW_YEL_ON  ; Set NS Red, EW Yellow
-000016 b90b                      	out portD, r16                   ; Output to Port D
-000017 9508                      	ret
+000017 e208                      	ldi r16, NS_RED_ON | EW_YEL_ON  ; Set NS Red, EW Yellow
+000018 b90b                      	out portD, r16                   ; Output to Port D
+000019 9508                      	ret
                                  
                                  ; NS Green, EW Red
                                  g_und_r:
-000018 e402                      	ldi r16, NS_GRE_ON | EW_RED_ON  ; Set NS Green, EW Red
-000019 b90b                      	out portD, r16                   ; Output to Port D
-00001a 9508                      	ret
+00001a e402                      	ldi r16, NS_GRE_ON | EW_RED_ON  ; Set NS Green, EW Red
+00001b b90b                      	out portD, r16                   ; Output to Port D
+00001c 9508                      	ret
                                  
                                  ; NS Yellow, EW Red
                                  y_und_r:
-00001b e404                      	ldi r16, NS_YEL_ON | EW_RED_ON  ; Set NS Yellow, EW Red
-00001c b90b                      	out portD, r16                   ; Output to Port D
-00001d 9508                      	ret
+00001d e404                      	ldi r16, NS_YEL_ON | EW_RED_ON  ; Set NS Yellow, EW Red
+00001e b90b                      	out portD, r16                   ; Output to Port D
+00001f 9508                      	ret
                                  
                                  ; NS Red, EW Red
                                  r_und_r:
-00001e e408                      	ldi r16, NS_RED_ON | EW_RED_ON   ; Set NS RED, EW Red
-00001f b90b                      	out portD, r16                   ; Output to Port D
-000020 9508                      	ret
+000020 e408                      	ldi r16, NS_RED_ON | EW_RED_ON   ; Set NS RED, EW Red
+000021 b90b                      	out portD, r16                   ; Output to Port D
+000022 9508                      	ret
                                  
                                  ; ==============================
                                  ; Delay Subroutine
                                  ; ==============================
                                  green_delay:
-000021 ef1f                      	ldi r17, 0xFF
-000022 ef2f                      A2: ldi r18, 0xFF        
-000023 ef3f                      A3: ldi r19, 0xFF        
-000024 953a                      A4: dec r19              
-000025 f441                      	brne L4               
-000026 952a                      A5: dec r18              
-000027 f429                      	brne L3               
-000028 951a                      	dec r17               
-000029 f411                      	brne L2               
-00002a 9508                      	ret  
+000023 ef1f                      	ldi r17, 0xFF
+000024 ef2f                      A2: ldi r18, 0xFF        
+000025 ef3f                      A3: ldi r19, 0xFF        
+000026 953a                      A4: dec r19              
+000027 f441                      	brne L4               
+000028 952a                      A5: dec r18              
+000029 f429                      	brne L3               
+00002a 951a                      	dec r17               
+00002b f411                      	brne L2               
+00002c 9508                      	ret  
                                  
                                  def_delay:
-00002b e512                      	ldi r17, 0x52
-00002c ef2f                      L2: ldi r18, 0xFF        
-00002d ef3f                      L3: ldi r19, 0xFF        
-00002e 953a                      L4: dec r19              
-00002f f7f1                      	brne L4               
-000030 952a                      L5: dec r18              
-000031 f7d9                      	brne L3               
-000032 951a                      	dec r17               
-000033 f7c1                      	brne L2               
-000034 9508                      	ret                  
+00002d e512                      	ldi r17, 0x52
+00002e ef2f                      L2: ldi r18, 0xFF        
+00002f ef3f                      L3: ldi r19, 0xFF        
+000030 953a                      L4: dec r19              
+000031 f7f1                      	brne L4               
+000032 952a                      L5: dec r18              
+000033 f7d9                      	brne L3               
+000034 951a                      	dec r17               
+000035 f7c1                      	brne L2               
+000036 9508                      	ret                  
                                  
                                  ; ==============================
                                  ; End - Infinite Loop to Halt Program Execution
@@ -1195,7 +1198,7 @@ fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   0 jmp   :   0
 ld    :   0 ldd   :   0 ldi   :  14 lds   :   0 lpm   :   0 lsl   :   0 
 lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
 neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :   8 pop   :   0 
-push  :   0 rcall :  10 ret   :   7 reti  :   0 rjmp  :   3 rol   :   0 
+push  :   0 rcall :  12 ret   :   7 reti  :   0 rjmp  :   3 rol   :   0 
 ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 
 sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 
 sei   :   0 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
@@ -1206,7 +1209,7 @@ Instructions used: 7 out of 113 (6.2%)
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x00006c    108      0    108   32768   0.3%
+[.cseg] 0x000000 0x000070    112      0    112   32768   0.3%
 [.dseg] 0x000100 0x000100      0      0      0    2048   0.0%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 
