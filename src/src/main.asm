@@ -2,6 +2,9 @@
 ;	CPE310:			Traffic Light Project Code
 ;
 ;	Authors:		Carrick Remillard, David Dag
+;   
+;   Copyright (C) 2025 Carrick Remillard, David Dag  
+;   Licensed under the GNU General Public License v3 (GPLv3) 
 ;
 ;	Description:	ATmega328P assembly code to control a traffic 
 ;					light system with NS (North-South) and EW (East
