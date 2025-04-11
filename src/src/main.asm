@@ -1,135 +1,151 @@
+;==============================================================================
+; Project:       Traffic Light Controller
+; Processor:     ATmega328P
+; Frequency:     16MHz
+; 
+; Description:   Educational implementation of a traffic light controller
+;               demonstrating basic embedded systems concepts. Controls two
+;               intersecting traffic signals (NS and EW) with appropriate
+;               timing and safety delays.
 ;
-;	CPE310:			Traffic Light Project Code
+; Register Usage:
+;   R16 - General purpose I/O operations and port configuration
+;   R17 - Outer delay loop counter
+;   R18 - Middle delay loop counter
+;   R19 - Inner delay loop counter
 ;
-;	Authors:		Carrick Remillard, David Dag
-;   
-;   Copyright (C) 2025 Carrick Remillard, David Dag  
-;   Licensed under the GNU General Public License v3 (GPLv3) 
-;
-;	Description:	ATmega328P assembly code to control a traffic 
-;					light system with NS (North-South) and EW (East
-;					-West) traffic signals using delays to simulate 
-;					light changes.  
-;
+; Authors:       Carrick Remillard, David Dag
+; Course:        CPE310 - Microprocessors I 
+; Created:       2023
+; Updated:       2024
+; 
+; Copyright (C) 2025 Carrick Remillard, David Dag  
+; Licensed under the GNU General Public License v3 (GPLv3) 
+;==============================================================================
 
 .include "m328pdef.inc"
 
-; ==============================
-; Defined Constants and Pin Mapping  
-; ==============================
-.equ NS_GRE_ON = (1<<PD1)  ; North-South Green Light on PD1
-.equ NS_YEL_ON = (1<<PD2)  ; North-South Yellow Light on PD2
-.equ NS_RED_ON = (1<<PD3)  ; North-South Red Light on PD3
+;==============================================================================
+; Pin Configuration Constants
+;==============================================================================
+; North-South Traffic Light Pins (Port D)
+.equ NS_GRE_ON = (1<<PD1)  ; Green light - Pin D1
+.equ NS_YEL_ON = (1<<PD2)  ; Yellow light - Pin D2
+.equ NS_RED_ON = (1<<PD3)  ; Red light - Pin D3
 
-.equ EW_GRE_ON = (1<<PD4)  ; East-West Green Light on PD4
-.equ EW_YEL_ON = (1<<PD5)  ; East-West Yellow Light on PD5
-.equ EW_RED_ON = (1<<PD6)  ; East-West Red Light on PD6
+; East-West Traffic Light Pins (Port D)
+.equ EW_GRE_ON = (1<<PD4)  ; Green light - Pin D4
+.equ EW_YEL_ON = (1<<PD5)  ; Yellow light - Pin D5
+.equ EW_RED_ON = (1<<PD6)  ; Red light - Pin D6
 
-; ==============================
-; Start - Program Initialization
-; ==============================
+;==============================================================================
+; Reset Vector
+;==============================================================================
 .org 0
-	rjmp start  ; Jump to start routine at program reset
+    rjmp start  ; Jump to start routine at program reset
 
+;==============================================================================
+; Initialization
+;==============================================================================
 start:
-	; Initialize the Stack Pointer
-	LDI R16, low(RAMEND)    ; Load the low byte of RAMEND into R16
-	OUT SPL, R16            ; Set low byte of Stack Pointer
-	LDI R16, high(RAMEND)   ; Load the high byte of RAMEND into R16
-	OUT SPH, R16            ; Set high byte of Stack Pointer
-	
-	; Configure Port D pins as outputs for traffic lights
-	LDI R16, NS_GRE_ON | NS_YEL_ON | NS_RED_ON | EW_GRE_ON | EW_YEL_ON | EW_RED_ON
-	OUT DDRD, R16           ; Set Port D as output for traffic light control
+    ; Initialize stack pointer to end of RAM
+    LDI R16, low(RAMEND)    ; Load low byte of stack address
+    OUT SPL, R16            ; Set Stack Pointer Low byte
+    LDI R16, high(RAMEND)   ; Load high byte of stack address
+    OUT SPH, R16            ; Set Stack Pointer High byte
+    
+    ; Configure all traffic light pins as outputs
+    LDI R16, NS_GRE_ON | NS_YEL_ON | NS_RED_ON | EW_GRE_ON | EW_YEL_ON | EW_RED_ON
+    OUT DDRD, R16           ; Set direction register
 
-; ==============================
-; Main Traffic Light Control Loop
-; ==============================
+;==============================================================================
+; Main Control Loop
+;==============================================================================
 driver:
-	rcall r_und_g           ; Call subroutine for NS Red, EW Green
-	rcall green_delay           
-	
-	rcall r_und_y           ; Call subroutine for NS Red, EW Yellow
-	rcall def_delay         
-	
-	rcall r_und_r			; Call subroutine for NS Red, EW RED
-	rcall def_delay   
+    ; Complete traffic light cycle sequence
+    rcall r_und_g           ; NS Red, EW Green (main green phase)
+    rcall green_delay       ; Longer delay for green light
+    
+    rcall r_und_y           ; NS Red, EW Yellow (warning phase)
+    rcall def_delay         ; Standard delay for yellow
+    
+    rcall r_und_r           ; All Red (safety phase)
+    rcall def_delay         ; Safety delay
+    
+    ; Repeat sequence for other direction
+    rcall g_und_r           ; NS Green, EW Red
+    rcall green_delay       ; Main green phase
+    
+    rcall y_und_r           ; NS Yellow, EW Red
+    rcall def_delay         ; Warning phase
+    
+    rcall r_und_r           ; All Red (safety phase)
+    rcall def_delay         ; Safety delay
+    
+    rjmp driver             ; Repeat cycle indefinitely
 
-	rcall g_und_r           ; Call subroutine for NS Green, EW Red
-	rcall green_delay           
-	
-	rcall y_und_r           ; Call subroutine for NS Yellow, EW Red
-	rcall def_delay    
-	
-	rcall r_und_r			; Call subroutine for NS Red, EW RED
-	rcall def_delay       
-	
-	rjmp driver             ; Repeat the sequence indefinitely
-
-; ==============================
+;==============================================================================
 ; Traffic Light State Subroutines
-; Naming Convention: NsLight_und_EwLight
-; ==============================
-
+;==============================================================================
 ; NS Red, EW Green
 r_und_g:
-	ldi r16, NS_RED_ON | EW_GRE_ON  ; Set NS Red, EW Green
-	out portD, r16                   ; Output to Port D
-	ret
+    ldi r16, NS_RED_ON | EW_GRE_ON  ; Set NS Red, EW Green
+    out portD, r16                   ; Output to Port D
+    ret
 
 ; NS Red, EW Yellow
 r_und_y:
-	ldi r16, NS_RED_ON | EW_YEL_ON  ; Set NS Red, EW Yellow
-	out portD, r16                   ; Output to Port D
-	ret
+    ldi r16, NS_RED_ON | EW_YEL_ON  ; Set NS Red, EW Yellow
+    out portD, r16                   ; Output to Port D
+    ret
 
 ; NS Green, EW Red
 g_und_r:
-	ldi r16, NS_GRE_ON | EW_RED_ON  ; Set NS Green, EW Red
-	out portD, r16                   ; Output to Port D
-	ret
+    ldi r16, NS_GRE_ON | EW_RED_ON  ; Set NS Green, EW Red
+    out portD, r16                   ; Output to Port D
+    ret
 
 ; NS Yellow, EW Red
 y_und_r:
-	ldi r16, NS_YEL_ON | EW_RED_ON  ; Set NS Yellow, EW Red
-	out portD, r16                   ; Output to Port D
-	ret
+    ldi r16, NS_YEL_ON | EW_RED_ON  ; Set NS Yellow, EW Red
+    out portD, r16                   ; Output to Port D
+    ret
 
 ; NS Red, EW Red
 r_und_r:
-	ldi r16, NS_RED_ON | EW_RED_ON   ; Set NS RED, EW Red
-	out portD, r16                   ; Output to Port D
-	ret
+    ldi r16, NS_RED_ON | EW_RED_ON   ; Set NS RED, EW Red
+    out portD, r16                   ; Output to Port D
+    ret
 
-; ==============================
-; Delay Subroutine
-; ==============================
-green_delay:
-	ldi r17, 0xFF
-A2: ldi r18, 0xFF        
-A3: ldi r19, 0xFF        
-A4: dec r19              
-	brne L4               
-A5: dec r18              
-	brne L3               
-	dec r17               
-	brne L2               
-	ret  
+;==============================================================================
+; Timing Delay Subroutines
+;==============================================================================
+green_delay:                ; Longer delay for green light phase
+    ldi r17, 0xFF          ; Maximum outer loop count
+A2: ldi r18, 0xFF          ; Middle loop initialization
+A3: ldi r19, 0xFF          ; Inner loop initialization
+A4: dec r19                ; Decrement inner counter
+    brne A4                ; Continue inner loop if not zero
+A5: dec r18                ; Decrement middle counter
+    brne A3                ; Continue middle loop if not zero
+    dec r17                ; Decrement outer counter
+    brne A2                ; Continue outer loop if not zero
+    ret                    ; Return from subroutine
 
-def_delay:
-	ldi r17, 0x52
-L2: ldi r18, 0xFF        
-L3: ldi r19, 0xFF        
-L4: dec r19              
-	brne L4               
-L5: dec r18              
-	brne L3               
-	dec r17               
-	brne L2               
-	ret                  
+def_delay:                 ; Standard delay for yellow/safety phases
+    ldi r17, 0x52          ; Shorter outer loop count
+L2: ldi r18, 0xFF          ; Middle loop initialization
+L3: ldi r19, 0xFF          ; Inner loop initialization
+L4: dec r19                ; Decrement inner counter
+    brne L4                ; Continue inner loop if not zero
+L5: dec r18                ; Decrement middle counter
+    brne L3                ; Continue middle loop if not zero
+    dec r17                ; Decrement outer counter
+    brne L2                ; Continue outer loop if not zero
+    ret                    ; Return from subroutine
 
-; ==============================
-; End - Infinite Loop to Halt Program Execution
-; ==============================
+;==============================================================================
+; Program Termination
+;==============================================================================
 done:
-	rjmp done             ; Infinite loop to halt execution
+    rjmp done              ; Safety infinite loop
